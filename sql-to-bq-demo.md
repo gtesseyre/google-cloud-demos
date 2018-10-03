@@ -71,8 +71,7 @@ Create a BigQuery Dataset to receive the MySQL data
 
 Create the schema
 ```
-bq_schemafile = open("bq_schema.json","w")
-bq_schemafile.write("""
+cat << EOF > bq_schema.json
 [
   {
     "name": "schema",
@@ -139,11 +138,11 @@ bq_schemafile.write("""
     "type": "RECORD"
   }
 ]
-""")
-bq_schemafile.close()
-```
+EOF
+
 Create the dataset 
 ```
+bq mk demo
 bq mk --schema bq_schema.json demo.mysql_replication_table 
 ```
 
