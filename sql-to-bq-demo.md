@@ -60,10 +60,14 @@ docker run -it --link mysql-db:mysql --rm mysql sh -c \
     -e"drop database demo;"'
 ```
 #### 7. Create a PubSub Topic 
-Initiate Google Cloud credentials and create a PubSub topic in which we'll write any MySQL changes 
+Initiate Google Cloud CLI to the correct project and create a PubSub topic in which we'll write any MySQL changes 
 ```
 gcloud init
 gcloud beta pubsub topics create sql-topic
+```
+Create a service account (IAM & ADMIN > Service Accounts) with Pub/Sub writing rights, get the key and upload the key in a location where you will run the binlog listener. Then export this credentials
+```
+export GOOGLE_APPLICATION_CREDENTIALS=key.json
 ```
 
 #### 8. Create a BigQuery Dataset 
@@ -259,7 +263,7 @@ docker run -it --link mysql-db:mysql --rm mysql sh -c \
 ```
 
 #### 12. Look at BigQuery 
-SQL Query
+In BigQuery UI, run that query to see the changes to the table as we are inserting/deleting/updating rows
 ```
 WITH A AS (SELECT 
 pos,
@@ -271,7 +275,7 @@ CASE
    WHEN type = 'WriteRowsEvent' THEN row.values.id 
    WHEN type = 'UpdateRowsEvent' THEN row.after_values.id 
    END AS id
-FROM `demo1.mysql_replication_demo3`)
+FROM 'demo.mysql_replication_table')
 
 SELECT * EXCEPT(pos,_row_number) FROM (
 SELECT
@@ -280,4 +284,4 @@ ROW_NUMBER() OVER (PARTITION BY id ORDER BY pos DESC) _row_number FROM A
 ) WHERE _row_number = 1
 ```
 
-
+You should see the BigQuery table getting updated as you are doing operations in MySQL
