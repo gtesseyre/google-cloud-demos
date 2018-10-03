@@ -184,7 +184,7 @@ stream = BinLogStreamReader(
 publisher = pubsub.PublisherClient()
 topic_name = 'projects/{project_id}/topics/{topic}'.format(
     project_id='sql-to-bq-demo',
-    topic='sql-to-bq-topic',  # Set this to something appropriate.
+    topic='sql-topic',  # Set this to something appropriate.
 )
 
 for binlogevent in stream:
