@@ -5,7 +5,22 @@ We will use that VM to simulate a MySQL DB using a Docker containers, and we wil
 ```
 sudo apt-get install python-pip 
 pip install google-cloud-pubsub mysql-replication google.cloud.bigquery
-sudo apt-get install -y docker.io
+sudo apt-get update
+sudo apt-get install \
+     apt-transport-https \
+     ca-certificates \
+     curl \
+     gnupg2 \
+     software-properties-common
+curl -fsSL https://download.docker.com/linux/debian/gpg | sudo apt-key add -
+sudo apt-key fingerprint 0EBFCD88
+sudo add-apt-repository \
+   "deb [arch=amd64] https://download.docker.com/linux/debian \
+   $(lsb_release -cs) \
+   stable"
+sudo apt-get update
+sudo apt-get install docker-ce
+sudo -s
 ```
 
 #### 3. Configure MySQL DB 
