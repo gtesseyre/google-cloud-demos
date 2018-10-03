@@ -3,6 +3,7 @@ We will use that VM to simulate a MySQL DB using a Docker containers, and we wil
 
 #### 2. Install dependencies packages and Docker
 ```
+sudo -s
 sudo apt-get install python-pip 
 pip install google-cloud-pubsub mysql-replication google.cloud.bigquery
 sudo apt-get update
@@ -20,7 +21,6 @@ sudo add-apt-repository \
    stable"
 sudo apt-get update
 sudo apt-get install docker-ce
-sudo -s
 ```
 
 #### 3. Configure MySQL DB 
@@ -139,7 +139,7 @@ cat << EOF > bq_schema.json
   }
 ]
 EOF
-
+```
 Create the dataset 
 ```
 bq mk demo
@@ -223,41 +223,61 @@ docker run -it --link mysql-db:mysql --rm mysql sh -c \
 
 Create a table
 ```
-docker run -it --link some-mysql:mysql --rm mysql sh -c \
+docker run -it --link mysql-db:mysql --rm mysql sh -c \
     'exec mysql -h"$MYSQL_PORT_3306_TCP_ADDR" -P"$MYSQL_PORT_3306_TCP_PORT" -uroot -p"$MYSQL_ENV_MYSQL_ROOT_PASSWORD" \
     -e"use demo ; create table demo.test (id int,name varchar(40), PRIMARY KEY(id));"'
 ```
 
 Insert a row
 ```
-docker run -it --link some-mysql:mysql --rm mysql sh -c \
+docker run -it --link mysql-db:mysql --rm mysql sh -c \
     'exec mysql -h"$MYSQL_PORT_3306_TCP_ADDR" -P"$MYSQL_PORT_3306_TCP_PORT" -uroot -p"$MYSQL_ENV_MYSQL_ROOT_PASSWORD" \
     -e"insert into demo.test (id,name) values (1,\"value1\");"'
 ```
 ```
-docker run -it --link some-mysql:mysql --rm mysql sh -c \
+docker run -it --link mysql-db:mysql --rm mysql sh -c \
     'exec mysql -h"$MYSQL_PORT_3306_TCP_ADDR" -P"$MYSQL_PORT_3306_TCP_PORT" -uroot -p"$MYSQL_ENV_MYSQL_ROOT_PASSWORD" \
     -e"insert into demo.test (id,name) values (2,\"value2\");"'
 ```
 ```
-docker run -it --link some-mysql:mysql --rm mysql sh -c \
+docker run -it --link mysql-db:mysql --rm mysql sh -c \
     'exec mysql -h"$MYSQL_PORT_3306_TCP_ADDR" -P"$MYSQL_PORT_3306_TCP_PORT" -uroot -p"$MYSQL_ENV_MYSQL_ROOT_PASSWORD" \
     -e"insert into demo.test (id,name) values (3,\"value3\");"'
 ```
 Update a row 
 ```
-docker run -it --link some-mysql:mysql --rm mysql sh -c \
+docker run -it --link mysql-db:mysql --rm mysql sh -c \
     'exec mysql -h"$MYSQL_PORT_3306_TCP_ADDR" -P"$MYSQL_PORT_3306_TCP_PORT" -uroot -p"$MYSQL_ENV_MYSQL_ROOT_PASSWORD" \
     -e"update demo.test SET name=\"value12345\" WHERE id=1;"'
 ```
 
 Review what is in the MySQL DB 
 ```
-docker run -it --link some-mysql:mysql --rm mysql sh -c \
+docker run -it --link mysql-db:mysql --rm mysql sh -c \
     'exec mysql -h"$MYSQL_PORT_3306_TCP_ADDR" -P"$MYSQL_PORT_3306_TCP_PORT" -uroot -p"$MYSQL_ENV_MYSQL_ROOT_PASSWORD" \
     -e"SELECT * FROM demo.test;"' 
 ```
 
 #### 12. Look at BigQuery 
+SQL Query
+```
+WITH A AS (SELECT 
+pos,
+CASE 
+   WHEN type = 'WriteRowsEvent' THEN row.values.name 
+   WHEN type = 'UpdateRowsEvent' THEN row.after_values.name 
+   END AS name,
+CASE 
+   WHEN type = 'WriteRowsEvent' THEN row.values.id 
+   WHEN type = 'UpdateRowsEvent' THEN row.after_values.id 
+   END AS id
+FROM `demo1.mysql_replication_demo3`)
+
+SELECT * EXCEPT(pos,_row_number) FROM (
+SELECT
+*,
+ROW_NUMBER() OVER (PARTITION BY id ORDER BY pos DESC) _row_number FROM A
+) WHERE _row_number = 1
+```
 
 
