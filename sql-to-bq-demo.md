@@ -60,8 +60,9 @@ docker run -it --link mysql-db:mysql --rm mysql sh -c \
     -e"drop database demo;"'
 ```
 #### 7. Create a PubSub Topic 
-Create a PubSub topic in which we'll write any MySQL changes 
+Initiate Google Cloud credentials and create a PubSub topic in which we'll write any MySQL changes 
 ```
+gcloud init
 gcloud beta pubsub topics create sql-topic
 ```
 
