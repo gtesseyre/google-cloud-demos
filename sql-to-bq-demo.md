@@ -254,7 +254,12 @@ docker run -it --link mysql-db:mysql --rm mysql sh -c \
     'exec mysql -h"$MYSQL_PORT_3306_TCP_ADDR" -P"$MYSQL_PORT_3306_TCP_PORT" -uroot -p"$MYSQL_ENV_MYSQL_ROOT_PASSWORD" \
     -e"update demo.test SET name=\"value12345\" WHERE id=1;"'
 ```
-
+Delete a row
+```
+docker run -it --link mysql-db:mysql --rm mysql sh -c     'exec mysql -h"$MYSQL_PORT_3306_TCP_ADDR" -P"$MYSQL_PORT_3306_TCP_PORT" -uroot -p"$MYSQL_ENV_MYSQL_ROOT
+_PASSWORD" \
+    -e"delete from demo.test where id=123;"'
+```
 Review what is in the MySQL DB 
 ```
 docker run -it --link mysql-db:mysql --rm mysql sh -c \
